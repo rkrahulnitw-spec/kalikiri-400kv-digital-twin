@@ -19,5 +19,17 @@ export default defineConfig({
   ],
   define: {
     CESIUM_BASE_URL: JSON.stringify(`${base}cesium`)
+  },
+  build: {
+    chunkSizeWarningLimit: 6000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          cesium: ["cesium"],
+          react: ["react", "react-dom"],
+          ui: ["lucide-react"]
+        }
+      }
+    }
   }
 });

@@ -128,19 +128,21 @@ export default function CesiumScene({ selectedAssetId, samples, onSelectAsset }:
 
     viewerRef.current = viewer;
     viewer.scene.globe.baseColor = Color.fromCssColorString("#172529");
-    viewer.scene.globe.maximumScreenSpaceError = 1.75;
+    viewer.scene.globe.maximumScreenSpaceError = 3;
     viewer.scene.globe.depthTestAgainstTerrain = false;
     viewer.scene.postProcessStages.fxaa.enabled = true;
-    viewer.scene.highDynamicRange = true;
+    viewer.scene.highDynamicRange = false;
     viewer.shadows = false;
     viewer.terrainShadows = ShadowMode.DISABLED;
-    viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.35);
-    viewer.scene.fog.enabled = true;
-    viewer.scene.fog.density = 0.00014;
+    viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.0);
+    viewer.scene.fog.enabled = false;
     viewer.scene.screenSpaceCameraController.minimumZoomDistance = 60;
     viewer.scene.screenSpaceCameraController.maximumZoomDistance = 1200;
     if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = false;
     viewer.cesiumWidget.creditContainer.setAttribute("style", "display:none");
+    // Only re-render when camera moves or data changes — biggest perf gain
+    viewer.scene.requestRenderMode = true;
+    viewer.scene.maximumRenderTimeChange = 0.1;
 
     buildSubstation(viewer, originRef.current, entityMapRef.current, markerMapRef.current);
     focusSubstation(viewer, originRef.current);
@@ -168,12 +170,14 @@ export default function CesiumScene({ selectedAssetId, samples, onSelectAsset }:
     viewer?.entities.values.forEach((entity) =>
       applyRouteSelection(entity, selectedAssetId, viewer.clock.currentTime)
     );
+    viewer?.scene.requestRender();
   }, [selectedAssetId]);
 
   useEffect(() => {
     markerMapRef.current.forEach((marker, assetId) =>
       applyMarker(marker, samples[assetId], assetId === selectedAssetId)
     );
+    viewerRef.current?.scene.requestRender();
   }, [samples, selectedAssetId]);
 
   useEffect(() => {
@@ -272,24 +276,9 @@ function addSiteContext(viewer: Viewer, origin: Matrix4) {
     { east: -390, north:  330, up: -0.04 }
   ], Color.fromCssColorString("#2d383c").withAlpha(0.72));
 
-  // Road along north boundary
-  addPolygon(viewer, origin, [
-    { east: -390, north: 252, up: 0.02 },
-    { east:  390, north: 252, up: 0.02 },
-    { east:  390, north: 278, up: 0.02 },
-    { east: -390, north: 278, up: 0.02 }
-  ], Color.fromCssColorString("#424b51").withAlpha(0.9));
-  // Road along west boundary
-  addPolygon(viewer, origin, [
-    { east: -368, north: -310, up: 0.02 },
-    { east: -340, north: -310, up: 0.02 },
-    { east: -340, north:  330, up: 0.02 },
-    { east: -368, north:  330, up: 0.02 }
-  ], Color.fromCssColorString("#3a454c").withAlpha(0.88));
-
-  // Surrounding context buildings
-  [-290, -238, 276, 322].forEach((east) => addContextBuilding(viewer, origin, east, 292, 36, 22));
-  [-168, -88, 40, 130, 218].forEach((east) => addContextBuilding(viewer, origin, east, 308, 48, 26));
+  // Surrounding context buildings (reduced count for performance)
+  [-290, 276].forEach((east) => addContextBuilding(viewer, origin, east, 292, 36, 22));
+  [-88, 130].forEach((east) => addContextBuilding(viewer, origin, east, 308, 48, 26));
 
   // Vegetation patches
   [-284, 280].forEach((east) => {
@@ -300,20 +289,7 @@ function addSiteContext(viewer: Viewer, origin: Matrix4) {
       { east: east - 36, north: -140, up: 0.01 }
     ], Color.fromCssColorString("#2d4b3e").withAlpha(0.58));
   });
-
-  // Grid lines (survey grid)
-  for (let east = -370; east <= 370; east += 60) {
-    addLine(viewer, origin, undefined, [
-      { east, north: -306, up: 0.04 },
-      { east, north:  326, up: 0.04 }
-    ], Color.fromCssColorString("#74858e").withAlpha(0.16), 0.8);
-  }
-  for (let north = -300; north <= 320; north += 60) {
-    addLine(viewer, origin, undefined, [
-      { east: -384, north, up: 0.04 },
-      { east:  384, north, up: 0.04 }
-    ], Color.fromCssColorString("#74858e").withAlpha(0.16), 0.8);
-  }
+  // Grid lines removed — large entity count, not visible from operating zoom
 }
 
 function addContextBuilding(
@@ -363,11 +339,11 @@ function addCivilWorks(viewer: Viewer, origin: Matrix4) {
   addRoadMarking(viewer, origin, -226, -41, 226, -41);
   addRoadMarking(viewer, origin, -226, 178, 226, 178);
 
-  // Cable trenches
-  [-176, -120, -64, -8, 48, 104, 160, 204].forEach((east) =>
+  // Cable trenches (key routes only — reduced for performance)
+  [-120, 48, 160].forEach((east) =>
     addTrench(viewer, origin, east, -204, east, 226)
   );
-  [-176, -100, -24, 56, 130, 196].forEach((north) =>
+  [-100, 56, 130].forEach((north) =>
     addTrench(viewer, origin, -220, north, 220, north)
   );
 
@@ -898,14 +874,17 @@ function addSurgeArresters(
   viewer: Viewer, origin: Matrix4,
   assetId: string, east: number, north: number, voltage: VoltageLevel
 ) {
-  const count = voltage === "400kV" ? 13 : voltage === "220kV" ? 9 : 5;
-  const radius = voltage === "400kV" ? 0.3 : voltage === "220kV" ? 0.24 : 0.18;
+  const totalH = voltage === "400kV" ? 7.5 : voltage === "220kV" ? 5.2 : 2.8;
+  const radius  = voltage === "400kV" ? 0.3  : voltage === "220kV" ? 0.24 : 0.18;
   phaseOffsets(voltage).forEach((offset) => {
     addBox(viewer, origin, undefined, assetId, east + offset, north, 0.9, { x: 1.8, y: 1.8, z: 1.8, color: DARK_STEEL });
-    for (let i = 0; i < count; i++) {
-      addCylinder(viewer, origin, undefined, assetId, east + offset, north, 2 + i * 0.56, 0.24, radius,
-        Color.fromCssColorString("#a7554a"));
-    }
+    // Solid body + 3 representative sheds (was 13 individual discs)
+    addCylinder(viewer, origin, undefined, assetId, east + offset, north, 0.9 + totalH / 2, totalH, radius * 0.5,
+      Color.fromCssColorString("#a7554a"));
+    [0.2, 0.55, 0.85].forEach((t) =>
+      addCylinder(viewer, origin, undefined, assetId, east + offset, north, 0.9 + t * totalH, 0.22, radius,
+        Color.fromCssColorString("#a7554a"))
+    );
   });
 }
 
@@ -1064,10 +1043,13 @@ function addInsulatorStack(
   assetId: string | undefined,
   east: number, north: number, up: number, height: number, radius: number
 ) {
+  // Central rod
   addCylinder(viewer, origin, undefined, assetId, east, north, up + height / 2, height, radius * 0.28, STEEL.withAlpha(0.76));
-  for (let i = 0; i < Math.max(3, Math.round(height / 0.54)); i++) {
-    addCylinder(viewer, origin, undefined, assetId, east, north, up + i * 0.52, 0.1, radius, PORCELAIN.withAlpha(0.98));
-  }
+  // Only 3 representative sheds instead of one-per-disc — reduces entity count by ~80%
+  const positions = [0.15, 0.5, 0.85];
+  positions.forEach((t) =>
+    addCylinder(viewer, origin, undefined, assetId, east, north, up + t * height, 0.14, radius, PORCELAIN.withAlpha(0.98))
+  );
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
