@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import AssetTree from "./components/AssetTree";
 import BottomPanel from "./components/BottomPanel";
-import CesiumScene from "./cesium/CesiumScene";
+import SubstationView from "./scene/SubstationView";
 import Inspector from "./components/Inspector";
 import SceneToolbar from "./components/SceneToolbar";
 import TopBar from "./components/TopBar";
@@ -40,7 +40,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <CesiumScene selectedAssetId={selectedAssetId} samples={samples} onSelectAsset={handleSelectAsset} />
+      <SubstationView selectedAssetId={selectedAssetId} samples={samples} onSelectAsset={handleSelectAsset} />
       <div className="scene-vignette" />
       <OpsRail activeModule={activeModule} onSelectModule={handleModuleSelect} />
 
