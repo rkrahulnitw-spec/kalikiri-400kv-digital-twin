@@ -20,6 +20,7 @@ type AuditCheck = { label: string; value: string; tone: StatusTone };
 const HV_BAY_IDS = [
   "line-400-rtpp4-ag-2", "line-400-rtpp4-ag-1",
   "line-400-chtr4-at-1", "line-400-chtr4-at-2",
+  "future-bay-1", "future-bay-2", "future-bay-3", "future-bay-4",
   "bay-400-bus-coupler"
 ];
 const TRANSFORMER_BAY_IDS = ["ict-1", "ict-2", "ict-3"];

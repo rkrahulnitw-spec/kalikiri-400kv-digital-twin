@@ -206,8 +206,9 @@ function buildSubstation(v: Viewer, o: Matrix4, em: Map<string, Entity>, mm: Map
   addBusAssembly(v, o, "bus-400-main-1",   "400 kV Main Bus 1",  "400kV", -235, 235, 160, 22, em, mm);
   addBusAssembly(v, o, "bus-400-main-2",   "400 kV Main Bus 2",  "400kV", -235, 235, 140, 22, em, mm);
   addBusAssembly(v, o, "bus-400-transfer", "400 kV Transfer Bus","400kV", -235, 235, 120, 22, em, mm);
-  addBusAssembly(v, o, "bus-220-section-1","220 kV Bus Section-1","220kV", -235,  -5, -80, 14, em, mm);
-  addBusAssembly(v, o, "bus-220-section-2","220 kV Bus Section-2","220kV",    5, 235, -80, 14, em, mm);
+  addBusAssembly(v, o, "bus-220-section-1","220 kV Bus Section-1","220kV", -235,  -5,  -80, 14, em, mm);
+  addBusAssembly(v, o, "bus-220-section-2","220 kV Bus Section-2","220kV",    5, 235,  -80, 14, em, mm);
+  addBusAssembly(v, o, "bus-220-transfer", "220 kV Transfer Bus", "220kV", -235, 235, -162, 14, em, mm);
 
   LINE_BAYS_400.forEach((b) => addLineBay400(v, o, b.id, b.label, b.x, em, mm));
   add400BusCoupler(v, o, em, mm);

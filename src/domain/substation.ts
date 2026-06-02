@@ -36,14 +36,17 @@ export const SUBSTATION_ASSETS: SubstationAsset[] = [
   asset("bay-400-bus-coupler","400 kV Bus Coupler",  "breaker", "400kV", "400 kV Double Bus",  0, 140),
 
   // ── 400/220 kV ICTs — 3 units at 315 MVA each (real from SLD) ─────────────
-  asset("ict-1", "ICT-T1  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays", -110, 10),
-  asset("ict-2", "ICT-T2  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays",    0, 10),
-  asset("ict-3", "ICT-T3  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays",  110, 10),
+  asset("ict-1",        "ICT-T1  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays", -110, 10),
+  asset("ict-2",        "ICT-T2  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays",    0, 10),
+  asset("ict-3",        "ICT-T3  400/220 kV  315 MVA", "transformer", "400kV", "400/220 kV ICT Bays",  110, 10),
+  asset("future-bay-2", "400 kV Future Bay-2",          "feeder",      "400kV", "400/220 kV ICT Bays",  -50, 80),
+  asset("future-bay-4", "400 kV Future Bay-4",          "feeder",      "400kV", "400/220 kV ICT Bays",  170, 80),
 
   // ── 220 kV Bus & Feeders (real from SLD) ──────────────────────────────────
-  asset("bus-220-section-1",  "220 kV Bus Section-1", "busbar",  "220kV", "220 kV Bus & Feeders", -120, -80),
-  asset("bus-220-section-2",  "220 kV Bus Section-2", "busbar",  "220kV", "220 kV Bus & Feeders",  120, -80),
-  asset("bay-220-bus-coupler","220 kV Bus Coupler",   "breaker", "220kV", "220 kV Bus & Feeders",    0, -80),
+  asset("bus-220-section-1",  "220 kV Bus Section-1",  "busbar",  "220kV", "220 kV Bus & Feeders", -120, -80),
+  asset("bus-220-section-2",  "220 kV Bus Section-2",  "busbar",  "220kV", "220 kV Bus & Feeders",  120, -80),
+  asset("bus-220-transfer",   "220 kV Transfer Bus",   "busbar",  "220kV", "220 kV Bus & Feeders",    0, -160),
+  asset("bay-220-bus-coupler","220 kV Bus Coupler",    "breaker", "220kV", "220 kV Bus & Feeders",    0, -80),
 
   // Real 220 kV lines from SLD
   asset("feeder-220-mdpl2-l2", "220 kV MDPL2 AT LINE-2", "feeder", "220kV", "220 kV Bus & Feeders", -230, -148),
