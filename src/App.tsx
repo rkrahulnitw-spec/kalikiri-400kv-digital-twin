@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import AssetTree from "./components/AssetTree";
 import BottomPanel from "./components/BottomPanel";
+import CesiumScene from "./cesium/CesiumScene";
 import SubstationView from "./scene/SubstationView";
 import Inspector from "./components/Inspector";
 import SceneToolbar from "./components/SceneToolbar";
@@ -15,7 +16,7 @@ import { useTelemetry } from "./telemetry/useTelemetry";
 export default function App() {
   const [selectedAssetId, setSelectedAssetId] = useState(PRIMARY_ASSET_ID);
   const [activeModule, setActiveModule] = useState("asset-ontology");
-  const [sceneMode, setSceneMode] = useState("3D");
+  const [sceneMode, setSceneMode] = useState("3D");   // "3D" or "2D"
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [bottomPanelOpen, setBottomPanelOpen] = useState(true);
   const { samples, selectedSample, selectedHistory, alarms, mode, setMode, replayLastHour } =
@@ -40,7 +41,24 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <SubstationView selectedAssetId={selectedAssetId} samples={samples} onSelectAsset={handleSelectAsset} />
+      {/* 3D mode = full CesiumJS globe scene */}
+      {sceneMode === "3D" && (
+        <CesiumScene
+          selectedAssetId={selectedAssetId}
+          samples={samples}
+          onSelectAsset={handleSelectAsset}
+        />
+      )}
+
+      {/* 2D mode = lightweight SVG top-down view (fast on any device) */}
+      {sceneMode !== "3D" && (
+        <SubstationView
+          selectedAssetId={selectedAssetId}
+          samples={samples}
+          onSelectAsset={handleSelectAsset}
+        />
+      )}
+
       <div className="scene-vignette" />
       <OpsRail activeModule={activeModule} onSelectModule={handleModuleSelect} />
 
@@ -88,22 +106,16 @@ export default function App() {
 }
 
 const MODULES = [
-  { id: "asset-ontology",       label: "Asset ontology",       icon: Network      },
-  { id: "network-topology",     label: "Network topology",     icon: GitBranch    },
-  { id: "telemetry-analytics",  label: "Telemetry analytics",  icon: BarChart3    },
-  { id: "alarms",               label: "Alarms",               icon: AlertTriangle },
-  { id: "site-map",             label: "Site map",             icon: MapPin       },
-  { id: "protection",           label: "Protection",           icon: ShieldCheck  },
-  { id: "system-settings",      label: "System settings",      icon: Settings     }
+  { id: "asset-ontology",      label: "Asset ontology",      icon: Network       },
+  { id: "network-topology",    label: "Network topology",    icon: GitBranch     },
+  { id: "telemetry-analytics", label: "Telemetry analytics", icon: BarChart3     },
+  { id: "alarms",              label: "Alarms",              icon: AlertTriangle  },
+  { id: "site-map",            label: "Site map",            icon: MapPin        },
+  { id: "protection",          label: "Protection",          icon: ShieldCheck   },
+  { id: "system-settings",     label: "System settings",     icon: Settings      }
 ];
 
-function OpsRail({
-  activeModule,
-  onSelectModule
-}: {
-  activeModule: string;
-  onSelectModule: (moduleId: string) => void;
-}) {
+function OpsRail({ activeModule, onSelectModule }: { activeModule: string; onSelectModule: (id: string) => void }) {
   return (
     <nav className="ops-rail" aria-label="Operational modules">
       {MODULES.map(({ id, label, icon: Icon }) => (
