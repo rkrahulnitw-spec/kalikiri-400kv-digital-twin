@@ -146,6 +146,15 @@ export default function CesiumScene({ selectedAssetId, samples, onSelectAsset }:
     viewer.scene.maximumRenderTimeChange  = 0.1;
 
     buildSubstation(viewer, originRef.current, entityMapRef.current, markerMapRef.current);
+    void import("./GeoJsonOverlay")
+      .then(({ addSurveyedGeoJsonOverlay }) => {
+        if (viewer.isDestroyed()) return;
+        addSurveyedGeoJsonOverlay(viewer, hasWorldTerrain ? SUBSTATION_ORIGIN.height : 0);
+        viewer.scene.requestRender();
+      })
+      .catch((error: unknown) => {
+        console.error("Surveyed GeoJSON overlay failed to load", error);
+      });
     focusSubstation(viewer, originRef.current);
 
     const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
