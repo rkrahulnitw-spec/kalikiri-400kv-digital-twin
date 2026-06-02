@@ -65,25 +65,31 @@ const AMBER         = Color.fromCssColorString("#f5b942");
 const RED           = Color.fromCssColorString("#ff5d4f");
 const ESRI_URL      = "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer";
 
+// Real line names from SCADA SLD
 const LINE_BAYS_400 = [
-  { id: "line-400-yerrampalem-1", label: "400 kV Yerrampalem", x: -160 },
-  { id: "line-400-tirupati-1",    label: "400 kV Tirupati",    x:  -80 },
-  { id: "line-400-nellore-1",     label: "400 kV Nellore",     x:   80 },
-  { id: "line-400-hyderabad-1",   label: "400 kV Hyderabad",   x:  160 }
+  { id: "line-400-rtpp4-ag-2", label: "RTPP4 AG L2", x: -160 },
+  { id: "line-400-rtpp4-ag-1", label: "RTPP4 AG L1", x:  -80 },
+  { id: "line-400-chtr4-at-1", label: "CHTR4 AT L1", x:   80 },
+  { id: "line-400-chtr4-at-2", label: "CHTR4 AT L2", x:  160 }
 ];
 
+// 3 ICTs — real from SLD (T1, T2, T3 each 315 MVA)
 const ICTS = [
-  { id: "ict-1", label: "ICT-1 315 MVA", x: -80 },
-  { id: "ict-2", label: "ICT-2 315 MVA", x:  80 }
+  { id: "ict-1", label: "ICT-T1 315 MVA", x: -110 },
+  { id: "ict-2", label: "ICT-T2 315 MVA", x:    0 },
+  { id: "ict-3", label: "ICT-T3 315 MVA", x:  110 }
 ];
 
+// Real 220 kV feeders from SLD
 const FEEDERS_220 = [
-  { id: "feeder-220-madanapalle", label: "Madanapalle", x: -195 },
-  { id: "feeder-220-puttur",      label: "Puttur",      x: -125 },
-  { id: "feeder-220-pileru",      label: "Pileru",      x:  -55 },
-  { id: "feeder-220-vempalle",    label: "Vempalle",    x:   15 },
-  { id: "feeder-220-chittoor",    label: "Chittoor",    x:   85 },
-  { id: "feeder-220-spare",       label: "Spare",       x:  155 }
+  { id: "feeder-220-mdpl2-l2",  label: "MDPL2 L2",  x: -215 },
+  { id: "feeder-220-mdpl2-l1",  label: "MDPL2 L1",  x: -148 },
+  { id: "feeder-220-future-1",  label: "Future-1",   x:  -80 },
+  { id: "feeder-220-future-2",  label: "Future-2",   x:  -14 },
+  { id: "feeder-220-future-3",  label: "Future-3",   x:   52 },
+  { id: "feeder-220-future-4",  label: "Future-4",   x:  118 },
+  { id: "feeder-220-klkr2-l1",  label: "KLKR2 L1",  x:  182 },
+  { id: "feeder-220-klkr2-l2",  label: "KLKR2 L2",  x:  218 }
 ];
 
 export default function CesiumScene({ selectedAssetId, samples, onSelectAsset }: CesiumSceneProps) {
@@ -200,8 +206,8 @@ function buildSubstation(v: Viewer, o: Matrix4, em: Map<string, Entity>, mm: Map
   addBusAssembly(v, o, "bus-400-main-1",   "400 kV Main Bus 1",  "400kV", -235, 235, 160, 22, em, mm);
   addBusAssembly(v, o, "bus-400-main-2",   "400 kV Main Bus 2",  "400kV", -235, 235, 140, 22, em, mm);
   addBusAssembly(v, o, "bus-400-transfer", "400 kV Transfer Bus","400kV", -235, 235, 120, 22, em, mm);
-  addBusAssembly(v, o, "bus-220-section-1","220 kV Bus Section 1","220kV", -235,  -5, -80, 14, em, mm);
-  addBusAssembly(v, o, "bus-220-section-2","220 kV Bus Section 2","220kV",    5, 235, -80, 14, em, mm);
+  addBusAssembly(v, o, "bus-220-section-1","220 kV Bus Section-1","220kV", -235,  -5, -80, 14, em, mm);
+  addBusAssembly(v, o, "bus-220-section-2","220 kV Bus Section-2","220kV",    5, 235, -80, 14, em, mm);
 
   LINE_BAYS_400.forEach((b) => addLineBay400(v, o, b.id, b.label, b.x, em, mm));
   add400BusCoupler(v, o, em, mm);
@@ -463,7 +469,7 @@ function add220FeederBay(v: Viewer, o: Matrix4, id: string, label: string, east:
 
 // ── Reactive compensation ──────────────────────────────────────────────────────
 function addLineReactor400(v: Viewer, o: Matrix4, em: Map<string, Entity>, mm: Map<string, Entity>) {
-  const id = "reactor-400-1";
+  const id = "reactor-400-bus";
   addBayFoundation(v, o, id, 210, 80, 78, 32);
   addGroundShadow(v, o, 211, 78, 36, 54, 0.3);
   addBox(v, o, undefined, id, 210, 80, 0.8, { x: 30, y: 46, z: 1.6, color: CONCRETE });
@@ -475,7 +481,7 @@ function addLineReactor400(v: Viewer, o: Matrix4, em: Map<string, Entity>, mm: M
   phaseOffsets("400kV").forEach((off) => addInsulatorStack(v, o, id, 210 + off, 80 + 14, 12.8, 7.5, 0.5));
   addBusTap(v, o, id, 210, 72, 22, 210, 140, 22, "400kV", 2.5);
   em.set(id, body); mm.set(id, addMarker(v, o, id, 228, 84, 18));
-  addLabel(v, o, id, "400 kV Line Reactor", 210, 114, 19);
+  addLabel(v, o, id, "400 kV Bus Reactor", 210, 114, 19);
 }
 
 function addCapacitorBank220(v: Viewer, o: Matrix4, em: Map<string, Entity>, mm: Map<string, Entity>) {

@@ -60,7 +60,7 @@ export default function AssetTree({ selectedAssetId, samples, onSelectAsset }: A
           className={`tree-row root ${selectedAssetId === PRIMARY_ASSET_ID ? "selected" : ""}`}
           onClick={() => onSelectAsset(PRIMARY_ASSET_ID)}
         >
-          <Boxes size={15} /> Kalikiri 400/220 kV AIS
+          <Boxes size={15} /> KLKR AT — Kalikiri 400/220 kV
         </button>
       </div>
 

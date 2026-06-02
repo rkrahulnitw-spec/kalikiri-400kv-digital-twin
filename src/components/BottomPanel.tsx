@@ -16,23 +16,29 @@ type StatusTone = "normal" | "caution" | "danger";
 type SwitchField = "breakerState" | "isolatorState" | "interlockState";
 type AuditCheck = { label: string; value: string; tone: StatusTone };
 
+// Real asset IDs from SLD
 const HV_BAY_IDS = [
-  "line-400-yerrampalem-1", "line-400-tirupati-1",
-  "line-400-nellore-1", "line-400-hyderabad-1", "bay-400-bus-coupler"
+  "line-400-rtpp4-ag-2", "line-400-rtpp4-ag-1",
+  "line-400-chtr4-at-1", "line-400-chtr4-at-2",
+  "bay-400-bus-coupler"
 ];
-const TRANSFORMER_BAY_IDS = ["ict-1", "ict-2"];
+const TRANSFORMER_BAY_IDS = ["ict-1", "ict-2", "ict-3"];
 const LV_SWITCHGEAR_IDS = [
   "bay-220-bus-coupler",
-  "feeder-220-madanapalle", "feeder-220-puttur", "feeder-220-pileru",
-  "feeder-220-vempalle", "feeder-220-chittoor", "feeder-220-spare"
+  "feeder-220-mdpl2-l2", "feeder-220-mdpl2-l1",
+  "feeder-220-klkr2-l1", "feeder-220-klkr2-l2",
+  "feeder-220-future-1", "feeder-220-future-2",
+  "feeder-220-future-3", "feeder-220-future-4"
 ];
 const MIMIC_FEEDERS = [
-  { id: "feeder-220-madanapalle", label: "MDL", x: 60  },
-  { id: "feeder-220-puttur",      label: "PUT", x: 140 },
-  { id: "feeder-220-pileru",      label: "PIL", x: 220 },
-  { id: "feeder-220-vempalle",    label: "VMP", x: 300 },
-  { id: "feeder-220-chittoor",    label: "CHT", x: 380 },
-  { id: "feeder-220-spare",       label: "SPR", x: 460 }
+  { id: "feeder-220-mdpl2-l2",  label: "MDL2",  x:  52 },
+  { id: "feeder-220-mdpl2-l1",  label: "MDL1",  x: 122 },
+  { id: "feeder-220-future-1",  label: "FUT1",  x: 192 },
+  { id: "feeder-220-future-2",  label: "FUT2",  x: 262 },
+  { id: "feeder-220-future-3",  label: "FUT3",  x: 332 },
+  { id: "feeder-220-future-4",  label: "FUT4",  x: 402 },
+  { id: "feeder-220-klkr2-l1",  label: "KLK1",  x: 472 },
+  { id: "feeder-220-klkr2-l2",  label: "KLK2",  x: 522 }
 ];
 
 export default function BottomPanel({ selectedAssetId, samples, history, alarms, onClose }: BottomPanelProps) {
@@ -172,26 +178,27 @@ function SingleLineMimic({ alarms, samples }: { alarms: AlarmEvent[]; samples: R
   const bayTone = (id: string) => (alarmed.has(id) ? "alarm" : "normal");
 
   return (
-    <svg className="sld-mimic" viewBox="0 0 560 158" role="img" aria-label="400/220 kV single line mimic">
+    <svg className="sld-mimic" viewBox="0 0 580 158" role="img" aria-label="400/220 kV Kalikiri single line mimic">
       {/* 400 kV buses */}
-      <line x1="28" y1="20" x2="532" y2="20" className="sld-bus hv" />
-      <line x1="28" y1="34" x2="532" y2="34" className="sld-bus hv muted" />
+      <line x1="18" y1="20" x2="562" y2="20" className="sld-bus hv" />
+      <line x1="18" y1="34" x2="562" y2="34" className="sld-bus hv muted" />
       {/* 220 kV bus */}
-      <line x1="28" y1="108" x2="532" y2="108" className="sld-bus lv" />
+      <line x1="18" y1="108" x2="562" y2="108" className="sld-bus lv" />
 
-      <text x="28" y="11">400 kV DOUBLE BUS</text>
-      <text x="28" y="140">220 kV BUS SECTION I / II</text>
+      <text x="18" y="11">400 kV DOUBLE BUS  —  KALIKIRI SS</text>
+      <text x="18" y="148">220 kV BUS SECTION I / II</text>
 
-      {/* 400 kV line bays */}
-      <Bay x={68}  topLabel="YERM"   tone={bayTone("line-400-yerrampalem-1")} sample={samples["line-400-yerrampalem-1"]} />
-      <Bay x={148} topLabel="TIRUP"  tone={bayTone("line-400-tirupati-1")}    sample={samples["line-400-tirupati-1"]} />
-      <Bay x={346} topLabel="NELL"   tone={bayTone("line-400-nellore-1")}     sample={samples["line-400-nellore-1"]} />
-      <Bay x={426} topLabel="HYD"    tone={bayTone("line-400-hyderabad-1")}   sample={samples["line-400-hyderabad-1"]} />
-      <Bay x={502} topLabel="CPLR"   tone={bayTone("bay-400-bus-coupler")}    sample={samples["bay-400-bus-coupler"]} />
+      {/* 400 kV line bays — real names from SLD */}
+      <Bay x={52}  topLabel="RTPP L2" tone={bayTone("line-400-rtpp4-ag-2")} sample={samples["line-400-rtpp4-ag-2"]} />
+      <Bay x={112} topLabel="RTPP L1" tone={bayTone("line-400-rtpp4-ag-1")} sample={samples["line-400-rtpp4-ag-1"]} />
+      <Bay x={382} topLabel="CHTR L1" tone={bayTone("line-400-chtr4-at-1")} sample={samples["line-400-chtr4-at-1"]} />
+      <Bay x={442} topLabel="CHTR L2" tone={bayTone("line-400-chtr4-at-2")} sample={samples["line-400-chtr4-at-2"]} />
+      <Bay x={532} topLabel="CPLR"    tone={bayTone("bay-400-bus-coupler")}  sample={samples["bay-400-bus-coupler"]} />
 
-      {/* ICTs */}
-      <TransformerBay x={228} label="ICT-1 315" tone={bayTone("ict-1")} sample={samples["ict-1"]} />
-      <TransformerBay x={292} label="ICT-2 315" tone={bayTone("ict-2")} sample={samples["ict-2"]} />
+      {/* 3 ICTs — T1, T2, T3 each 315 MVA (real from SLD) */}
+      <TransformerBay x={184} label="T1 315" tone={bayTone("ict-1")} sample={samples["ict-1"]} />
+      <TransformerBay x={247} label="T2 315" tone={bayTone("ict-2")} sample={samples["ict-2"]} />
+      <TransformerBay x={310} label="T3 315" tone={bayTone("ict-3")} sample={samples["ict-3"]} />
 
       {/* 220 kV feeder drops */}
       {MIMIC_FEEDERS.map((feeder) => (

@@ -30,7 +30,7 @@ export default function TopBar({
         <div className="brand-mark">AP</div>
         <div>
           <h1>APTRANSCO Digital Twin</h1>
-          <p>Kalikiri 400/220 kV AIS Substation</p>
+          <p>KLKR AT — Kalikiri 400/220 kV AIS Substation</p>
         </div>
       </div>
 

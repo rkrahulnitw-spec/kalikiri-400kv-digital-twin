@@ -3,7 +3,7 @@
  * Replaces CesiumJS 3D engine.  Bundle: ~0 KB extra (pure React + SVG).
  */
 import { useRef, useState, type MouseEvent, type WheelEvent } from "react";
-import type { BreakerState, IsolatorState, TelemetrySample } from "../domain/types";
+import type { BreakerState, TelemetrySample } from "../domain/types";
 
 interface Props {
   selectedAssetId: string;
@@ -27,25 +27,31 @@ const BX1 = 62;
 const BX2 = 1138;
 
 // ── Asset layout ───────────────────────────────────────────────────────────────
+// Real line names from SCADA SLD
 const LINE400 = [
-  { id: "line-400-yerrampalem-1", x: 148,  label: "Yerrampalem" },
-  { id: "line-400-tirupati-1",    x: 296,  label: "Tirupati"    },
-  { id: "line-400-nellore-1",     x: 904,  label: "Nellore"     },
-  { id: "line-400-hyderabad-1",   x: 1052, label: "Hyderabad"   },
+  { id: "line-400-rtpp4-ag-2", x: 148,  label: "RTPP4 AG L2" },
+  { id: "line-400-rtpp4-ag-1", x: 296,  label: "RTPP4 AG L1" },
+  { id: "line-400-chtr4-at-1", x: 904,  label: "CHTR4 AT L1" },
+  { id: "line-400-chtr4-at-2", x: 1052, label: "CHTR4 AT L2" },
 ];
 
+// 3 ICTs from SLD — T1, T2, T3 each 315 MVA
 const ICTS = [
-  { id: "ict-1", x: 390, label: "ICT-1  315 MVA" },
-  { id: "ict-2", x: 810, label: "ICT-2  315 MVA" },
+  { id: "ict-1", x: 310,  label: "ICT-T1  315 MVA" },
+  { id: "ict-2", x: 600,  label: "ICT-T2  315 MVA" },
+  { id: "ict-3", x: 890,  label: "ICT-T3  315 MVA" },
 ];
 
+// Real 220 kV feeders from SLD
 const FEEDERS220 = [
-  { id: "feeder-220-madanapalle", x: 118,  label: "Madanapalle" },
-  { id: "feeder-220-puttur",      x: 242,  label: "Puttur"      },
-  { id: "feeder-220-pileru",      x: 366,  label: "Pileru"      },
-  { id: "feeder-220-vempalle",    x: 490,  label: "Vempalle"    },
-  { id: "feeder-220-chittoor",    x: 614,  label: "Chittoor"    },
-  { id: "feeder-220-spare",       x: 738,  label: "Spare"       },
+  { id: "feeder-220-mdpl2-l2",  x:  90,  label: "MDPL2 L2"  },
+  { id: "feeder-220-mdpl2-l1",  x: 200,  label: "MDPL2 L1"  },
+  { id: "feeder-220-future-1",  x: 310,  label: "Future-1"   },
+  { id: "feeder-220-future-2",  x: 420,  label: "Future-2"   },
+  { id: "feeder-220-future-3",  x: 700,  label: "Future-3"   },
+  { id: "feeder-220-future-4",  x: 810,  label: "Future-4"   },
+  { id: "feeder-220-klkr2-l1",  x: 920,  label: "KLKR2 L1"  },
+  { id: "feeder-220-klkr2-l2",  x: 1030, label: "KLKR2 L2"  },
 ];
 
 // ── Colours ────────────────────────────────────────────────────────────────────
@@ -148,8 +154,8 @@ export default function SubstationView({ selectedAssetId, samples, onSelectAsset
       <Bus id="bus-400-transfer" x1={BX1} x2={BX2}                 y={BUS400_TY} color={C400} sw={3}   sel={selectedAssetId} s={samples} onSel={sel} opacity={0.42} dash="20 7" />
 
       {/* ── 220 kV buses ── */}
-      <Bus id="bus-220-section-1" x1={BX1} x2={(BX1 + BX2) / 2 - 6} y={BUS220_Y}  color={C220} sw={5.5} sel={selectedAssetId} s={samples} onSel={sel} />
-      <Bus id="bus-220-section-2" x1={(BX1 + BX2) / 2 + 6} x2={BX2} y={BUS220_Y}  color={C220} sw={5.5} sel={selectedAssetId} s={samples} onSel={sel} />
+      <Bus id="bus-220-section-1" x1={BX1} x2={580} y={BUS220_Y} color={C220} sw={5.5} sel={selectedAssetId} s={samples} onSel={sel} />
+      <Bus id="bus-220-section-2" x1={620} x2={BX2} y={BUS220_Y} color={C220} sw={5.5} sel={selectedAssetId} s={samples} onSel={sel} />
 
       {/* ── 400 kV line bays ── */}
       {LINE400.map(b => (
@@ -177,7 +183,7 @@ export default function SubstationView({ selectedAssetId, samples, onSelectAsset
 
       {/* ── Reactive compensation ── */}
       <CapBank sel={selectedAssetId === "cap-bank-220-1"} sample={samples["cap-bank-220-1"]} onSel={sel} />
-      <Reactor400 sel={selectedAssetId === "reactor-400-1"} sample={samples["reactor-400-1"]} onSel={sel} />
+      <Reactor400 sel={selectedAssetId === "reactor-400-bus"} sample={samples["reactor-400-bus"]} onSel={sel} />
 
       {/* ── Auxiliaries ── */}
       <CtrlBuilding sel={selectedAssetId === "control-building"} sample={samples["control-building"]} onSel={sel} />
@@ -435,7 +441,7 @@ function CapBank({ sel, sample, onSel }:
 // ── 400 kV Line Reactor ────────────────────────────────────────────────────────
 function Reactor400({ sel, sample, onSel }:
   { sel: boolean; sample?: TelemetrySample; onSel: (id: string) => void }) {
-  const id = "reactor-400-1";
+  const id = "reactor-400-bus";
   const x = 1090;
   const y = BUS400_Y1;
   return (
